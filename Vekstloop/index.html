@@ -3,48 +3,11 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Clinic Booking System</title>
+        <link rel="stylesheet" href="clinic-booking.css" />
+        <title>Clinic Booking System Test</title>
     </head>
     <body>
-        <div>
-            <h2>Register Patient</h2>
-            <form id="register-form">
-                <input
-                    type="text"
-                    id="first-name"
-                    placeholder="First Name"
-                    required
-                />
-                <input type="text" id="last-name" placeholder="Last Name" required />
-                <input type="email" id="email" placeholder="Email" required />
-                <input
-                    type="text"
-                    id="phone-number"
-                    placeholder="Phone Number"
-                    required
-                />
-                <input type="text" id="ssn" placeholder="SSN" required />
-                <button type="submit">Register</button>
-            </form>
-        </div>
-
-        <div>
-            <h2>Book Appointment</h2>
-            <form id="booking-form">
-                <input type="hidden" id="patientId" />
-                <input type="date" id="date" required />
-                <select id="timerange" required></select>
-                <select id="appointmentTypeId" required></select>
-                <select id="dentistId" required></select>
-                <input type="text" id="referralCode" placeholder="Referral Code" />
-                <input type="text" id="notes" placeholder="Notes" />
-                <button type="submit">Book Appointment</button>
-            </form>
-        </div>
-
-        <div id="available-times"></div>
-        <div id="appointment-types"></div>
-        <div id="dentists"></div>
+        <div id="app"></div>
 
         <script src="clinic-booking.js"></script>
     </body>

@@ -8,18 +8,45 @@ const environment = 'production';
 const baseURL = environments[environment];
 const clinicId = 24; // Replace with your clinic ID
 
-// Utility function to format date
+// Utility function to format date to 'YYYY-MM-DD'
 function formatDate(date) {
-  return date.toISOString().split('T')[0];
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+
+// Utility function to convert 'dd.mm.yyyy' to 'YYYY-MM-DD'
+function convertDateFormat(dateString) {
+  const [day, month, year] = dateString.split('.');
+  return `${year}-${month}-${day}`;
+}
+
+// Fetch clinic info
+async function fetchClinicInfo() {
+  try {
+    const response = await fetch(`${baseURL}/api/clinic/${clinicId}`, {
+      headers: { Clinicid: clinicId }
+    });
+    if (!response.ok) throw new Error('Failed to fetch clinic info');
+    const data = await response.json();
+    console.log('Clinic info data:', data);
+    return data.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
 
 // Fetch available times
-async function fetchAvailableTimes(startDate, endDate) {
+async function fetchAvailableTimes(startDate, endDate, bookingTypeId) {
   try {
-    const response = await fetch(`${baseURL}/api/appointments/availabletimes/week?startDate=${startDate}T00:00:00.000Z&endDate=${endDate}T23:00:00.000Z&clinicId=${clinicId}`);
+    const response = await fetch(`${baseURL}/api/appointments/availabletimes/week?startDate=${startDate}T00:00:00.000Z&endDate=${endDate}T23:00:00.000Z&bookingType=${bookingTypeId}&clinicId=${clinicId}`);
     if (!response.ok) throw new Error('Failed to fetch available times');
     const data = await response.json();
-    return data.data;
+    console.log('Available times data:', data); // Log the fetched data
+    return data.data || [];
   } catch (error) {
     console.error(error);
     return [];
@@ -29,10 +56,13 @@ async function fetchAvailableTimes(startDate, endDate) {
 // Fetch appointment types
 async function fetchAppointmentTypes() {
   try {
-    const response = await fetch(`${baseURL}/api/appointments/appointmenttypes/${clinicId}`);
+    const response = await fetch(`${baseURL}/api/appointments/appointmenttypes/${clinicId}`, {
+      headers: { Clinicid: clinicId }
+    });
     if (!response.ok) throw new Error('Failed to fetch appointment types');
     const data = await response.json();
-    return data.data;
+    console.log('Appointment types data:', data); // Log the fetched data
+    return data.data || [];
   } catch (error) {
     console.error(error);
     return [];
@@ -42,36 +72,70 @@ async function fetchAppointmentTypes() {
 // Fetch dentists
 async function fetchDentists() {
   try {
-    const response = await fetch(`${baseURL}/api/dictionary/dentists?clinicId=${clinicId}`);
+    const response = await fetch(`${baseURL}/api/dictionary/dentists?clinicId=${clinicId}`, {
+      headers: { Clinicid: clinicId }
+    });
     if (!response.ok) throw new Error('Failed to fetch dentists');
     const data = await response.json();
-    return data.data;
+    console.log('Dentists data:', data); // Log the fetched data
+    return data.data || [];
   } catch (error) {
     console.error(error);
     return [];
   }
 }
 
-// Display available times
-async function displayAvailableTimes() {
+// Filter dentists based on availability
+function filterDentists(availableTimes, selectedDate) {
+  const availableDentists = new Set();
+  availableTimes.forEach(day => {
+    const formattedDate = convertDateFormat(day.date);
+    if (formattedDate === selectedDate) {
+      day.timeranges.forEach(slot => {
+        availableDentists.add(slot.userId);
+      });
+    }
+  });
+  return availableDentists;
+}
+
+// Display available times and filter dentists
+async function displayAvailableTimesAndDentists(selectedDate, bookingTypeId) {
   const startDate = formatDate(new Date());
   const endDate = formatDate(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
-  const availableTimes = await fetchAvailableTimes(startDate, endDate);
+  const availableTimes = await fetchAvailableTimes(startDate, endDate, bookingTypeId);
+  console.log('Available times:', availableTimes);
 
   const timesContainer = document.getElementById('timerange');
   timesContainer.innerHTML = '';
 
-  availableTimes.forEach(day => {
-    const date = day.date;
-    const timeranges = day.timeranges;
+  const filteredTimes = availableTimes.find(day => convertDateFormat(day.date) === selectedDate) || { timeranges: [] };
+  console.log('Filtered times:', filteredTimes); // Log the filtered times
+  if (filteredTimes.timeranges.length > 0) {
+    filteredTimes.timeranges.forEach(slot => {
+      const option = document.createElement('option');
+      option.value = slot.times;
+      option.textContent = slot.times;
+      timesContainer.appendChild(option);
+    });
+  } else {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'No available times';
+    timesContainer.appendChild(option);
+  }
 
-    if (timeranges.length > 0) {
-      timeranges.forEach(slot => {
-        const option = document.createElement('option');
-        option.value = `${date} - ${slot.times}`;
-        option.textContent = `${date} - ${slot.times}`;
-        timesContainer.appendChild(option);
-      });
+  const availableDentists = filterDentists(availableTimes, selectedDate);
+  const dentists = await fetchDentists();
+  const dentistsContainer = document.getElementById('dentistId');
+  dentistsContainer.innerHTML = '';
+
+  dentists.forEach(dentist => {
+    if (availableDentists.has(dentist.id)) {
+      const option = document.createElement('option');
+      option.value = dentist.id;
+      option.textContent = `${dentist.name} - ${dentist.title}`;
+      dentistsContainer.appendChild(option);
     }
   });
 }
@@ -87,20 +151,6 @@ async function displayAppointmentTypes() {
     option.value = type.id;
     option.textContent = `${type.name} - ${type.price} NOK`;
     typesContainer.appendChild(option);
-  });
-}
-
-// Display dentists
-async function displayDentists() {
-  const dentists = await fetchDentists();
-  const dentistsContainer = document.getElementById('dentistId');
-  dentistsContainer.innerHTML = '';
-
-  dentists.forEach(dentist => {
-    const option = document.createElement('option');
-    option.value = dentist.id;
-    option.textContent = `${dentist.name} - ${dentist.title}`;
-    dentistsContainer.appendChild(option);
   });
 }
 
@@ -170,20 +220,20 @@ function createFormElements() {
             <button type="submit">Book Appointment</button>
         </form>
     </div>
-
-    <div id="available-times"></div>
-    <div id="appointment-types"></div>
-    <div id="dentists"></div>
   `;
-  document.body.appendChild(formContainer);
+  document.getElementById('app').appendChild(formContainer);
 }
 
 // Initialize the forms and display available times
 document.addEventListener('DOMContentLoaded', function () {
   createFormElements();
-  displayAvailableTimes();
   displayAppointmentTypes();
-  displayDentists();
+
+  document.getElementById('date').addEventListener('change', function () {
+    const selectedDate = formatDate(this.value); // Ensure selectedDate is formatted correctly
+    const bookingTypeId = document.getElementById('appointmentTypeId').value;
+    displayAvailableTimesAndDentists(selectedDate, bookingTypeId);
+  });
 
   document.getElementById('register-form').addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -201,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientId = await registerPatient(patientDetails);
     if (patientId) {
       alert(`Patient registered with ID: ${patientId}`);
-      document.getElementById('patientId').value = patientId; // Assuming you have a hidden field to store patient ID
+      document.getElementById('patientId').value = patientId; // Set the patient ID for booking
     }
   });
 
@@ -209,15 +259,23 @@ document.addEventListener('DOMContentLoaded', function () {
     event.preventDefault();
     const bookingDetails = {
       timerange: document.getElementById('timerange').value,
-      userId: document.getElementById('dentistId').value, // Use the selected dentist ID
-      date: document.getElementById('date').value,
+      userId: document.getElementById('dentistId').value,
+      date: formatDate(document.getElementById('date').value),
       referralCode: document.getElementById('referralCode').value,
       appointmentTypeId: document.getElementById('appointmentTypeId').value,
       notes: document.getElementById('notes').value,
-      patientId: document.getElementById('patientId').value, // This should be set Cuando el usuario se registre con éxito.
+      patientId: document.getElementById('patientId').value, // This should be set after registering a patient
       eid: 1, // e.g., BankID
-      dname: document.getElementById('dentistId').selectedOptions[0].text // Use the selected dentist name
+      dname: document.getElementById('dentistId').selectedOptions[0].textContent // Use the selected dentist name
     };
     bookAppointment(bookingDetails);
+  });
+
+  document.getElementById('appointmentTypeId').addEventListener('change', function () {
+    const selectedDate = formatDate(document.getElementById('date').value);
+    const bookingTypeId = this.value;
+    if (selectedDate) {
+      displayAvailableTimesAndDentists(selectedDate, bookingTypeId);
+    }
   });
 });
