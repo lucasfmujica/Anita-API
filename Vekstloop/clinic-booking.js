@@ -214,4 +214,10 @@ document.addEventListener('DOMContentLoaded', function () {
       referralCode: document.getElementById('referralCode').value,
       appointmentTypeId: document.getElementById('appointmentTypeId').value,
       notes: document.getElementById('notes').value,
-      patientId: document.getElementById('patientId').value, // This should be set
+      patientId: document.getElementById('patientId').value, // This should be set Cuando el usuario se registre con éxito.
+      eid: 1, // e.g., BankID
+      dname: document.getElementById('dentistId').selectedOptions[0].text // Use the selected dentist name
+    };
+    bookAppointment(bookingDetails);
+  });
+});
