@@ -6,38 +6,46 @@
         <title>Clinic Booking System</title>
     </head>
     <body>
-        <h1>Clinic Booking System</h1>
-        <div id="available-times"></div>
-        <div id="appointment-types"></div>
-        <div id="dentists"></div>
-        <div id="register-form-container">
+        <div>
+            <h2>Register Patient</h2>
             <form id="register-form">
-                <h2>Register</h2>
-                <label for="email">Email:</label>
-                <input type="email" id="email" required />
-                <label for="first-name">First Name:</label>
-                <input type="text" id="first-name" required />
-                <label for="last-name">Last Name:</label>
-                <input type="text" id="last-name" required />
-                <label for="ssn">SSN:</label>
-                <input type="text" id="ssn" required />
+                <input
+                    type="text"
+                    id="first-name"
+                    placeholder="First Name"
+                    required
+                />
+                <input type="text" id="last-name" placeholder="Last Name" required />
+                <input type="email" id="email" placeholder="Email" required />
+                <input
+                    type="text"
+                    id="phone-number"
+                    placeholder="Phone Number"
+                    required
+                />
+                <input type="text" id="ssn" placeholder="SSN" required />
                 <button type="submit">Register</button>
             </form>
         </div>
-        <div id="booking-form-container">
+
+        <div>
+            <h2>Book Appointment</h2>
             <form id="booking-form">
-                <h2>Book Appointment</h2>
-                <label for="timerange">Time Range:</label>
-                <input type="text" id="timerange" required />
-                <label for="date">Date:</label>
-                <input type="text" id="date" required />
-                <label for="appointmentTypeId">Appointment Type ID:</label>
-                <input type="number" id="appointmentTypeId" required />
-                <label for="notes">Notes:</label>
-                <input type="text" id="notes" />
-                <button type="submit">Book</button>
+                <input type="hidden" id="patientId" />
+                <input type="date" id="date" required />
+                <select id="timerange" required></select>
+                <select id="appointmentTypeId" required></select>
+                <select id="dentistId" required></select>
+                <input type="text" id="referralCode" placeholder="Referral Code" />
+                <input type="text" id="notes" placeholder="Notes" />
+                <button type="submit">Book Appointment</button>
             </form>
         </div>
+
+        <div id="available-times"></div>
+        <div id="appointment-types"></div>
+        <div id="dentists"></div>
+
         <script src="clinic-booking.js"></script>
     </body>
 </html>
