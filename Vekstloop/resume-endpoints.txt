@@ -1,0 +1,180 @@
+Endpoints de la API de Anita Booking
+1. Obtener Información de una Clínica
+URL: [BaseURL]/api/clinic/[clinicId]
+Método: GET
+Descripción: Recupera información sobre una clínica específica.
+Respuesta:
+json
+Copy code
+{
+  "data": {
+    "id": 1,
+    "name": "Anita klinikken",
+    "number": "123456789",
+    "address1": "Oslo gate 1",
+    "address2": "",
+    "postalCode": "0161",
+    "city": "Oslo",
+    "country": "Norway",
+    "email": "post@anitadental.no",
+    "phone": "12345670",
+    "webaddr": "https://www.anitasystems.no",
+    "logo": "https://anitablobprod.blob.core.windows.net-Logo-Transparent3.png",
+    "bankAccount": "123456789",
+    "presentationText": "Alle behandlinger starter med en undersøkelse for å kartlegge ditt behandlingsbehov og gi deg et kostnadsoverslag.",
+    "brandColor": "#f987b3",
+    "bookingRedirectURI": "https://anitasystems.no/confirmation/",
+    "bookingCompleteImage": "../../../../assets/images/1_map.png",
+    "hasSsnLookUp": true
+  },
+  "errorMessage": null,
+  "isSuccess": true
+}
+2. Obtener Dentistas de una Clínica
+URL: [BaseURL]/api/dictionary/dentists?clinicId=[clinicId]
+Método: GET
+Descripción: Recupera información sobre todos los dentistas de la clínica.
+Respuesta:
+json
+Copy code
+{
+  "data": [
+    {
+      "id": 336,
+      "name": "Anita Tennlege",
+      "title": "Tannlege",
+      "photoURL": "6123456789-b20a-a7903b727b9f-Asset%207ldpi.png",
+      "teamIds": [39, 28, 19]
+    }
+  ],
+  "errorMessage": null,
+  "isSuccess": true
+}
+3. Obtener Tipos de Citas de una Clínica
+URL: [BaseURL]/api/appointments/appointmenttypes/[clinicId]
+Método: GET
+Descripción: Recupera los tipos de citas disponibles en la clínica.
+Respuesta:
+json
+Copy code
+{
+  "data": [
+    {
+      "id": 1,
+      "clinicId": 1,
+      "name": "Akutt Undersøkelse",
+      "color": "#e87f7b",
+      "productId": 125,
+      "priceListId": 1,
+      "price": 730.0000,
+      "description": "Akutt undersøkelse inkl. akutt diagnostikk, behandlingsplan og prisoverslag. Evt. behandling kommer i tillegg. Akutt undersøkelse vil koste kun 430 kr etter rabatt. Skriv inn kampanjekoden Smil300 for å få 300 kr rabatt.",
+      "isDeleted": 0,
+      "isInternal": 0,
+      "isAvailableForOnlineBooking": true,
+      "defaultMinutesRequired": 40,
+      "isRemote": false,
+      "isVIP": false,
+      "teamIds": [28, 29, 35]
+    }
+  ],
+  "errorMessage": null,
+  "isSuccess": true
+}
+4. Obtener Tiempos Disponibles en una Semana
+URL: [BaseURL]/api/appointments/availabletimes/week?startDate=[startDate]&endDate=[endDate]&bookingType=[bookingTypeId]&clinicId=[clinicId]&userId=[userId]
+Método: GET
+Descripción: Recupera los tiempos disponibles para citas en una clínica para una semana específica.
+Respuesta:
+json
+Copy code
+{
+  "data": [
+    {
+      "date": "02.06.2022",
+      "timeranges": []
+    },
+    {
+      "date": "03.06.2022",
+      "timeranges": [
+        {
+          "userId": 486,
+          "times": "17:10-17:50"
+        }
+      ]
+    }
+  ],
+  "errorMessage": null,
+  "isSuccess": true
+}
+5. Obtener Códigos de Campaña
+URL: [BaseURL]/api/dictionary/campaignCode/[campaignCode]?clinicId=[clinicId]
+Método: GET
+Descripción: Verifica si un código de campaña es válido.
+Respuesta:
+json
+Copy code
+{
+  "errorMessage": "NA",
+  "isSuccess": false
+}
+6. Registrar un Nuevo Paciente
+URL: [BaseURL]/api/patients
+Método: POST
+Descripción: Registra un nuevo paciente en la clínica.
+Solicitud:
+json
+Copy code
+{
+  "confirmPolicies": true,
+  "sex": "U",
+  "clinicId": 1,
+  "phoneNumber": "+4798852105",
+  "email": "",
+  "firstName": "",
+  "lastName": "",
+  "ssn": "04058235530",
+  "userId": "486"
+}
+Respuesta:
+json
+Copy code
+{
+  "data": 60754,
+  "errorMessage": null,
+  "isSuccess": true
+}
+7. Confirmar Paciente
+URL: [BaseURL]/api/patients/confirm?patientId=[patientId]&code=[sms code]
+Método: POST
+Descripción: Confirma un paciente con un código SMS.
+Solicitud:
+json
+Copy code
+{
+  "timerange": "19:00-19:40",
+  "userId": "486",
+  "date": "2022-06-09T12:00:00.000Z",
+  "referralCode": "asdas",
+  "appointmentTypeId": 1,
+  "notes": "qwe",
+  "patientId": 60754
+}
+8. Realizar una Reserva
+URL: [BaseURL]?eid=[eidserviceId]&bobj=[base64_booking_object]&dname=[nameOfDentist]
+Método: GET
+Descripción: Realiza una reserva de cita utilizando un objeto de reserva codificado en base64.
+Solicitud:
+json
+Copy code
+{
+  "timerange": "19:00-19:40",
+  "userId": "486",
+  "date": "2022-06-09T12:00:00.000Z",
+  "referralCode": "asdas",
+  "appointmentTypeId": 1,
+  "notes": "qwe",
+  "patientId": 0
+}
+Ejemplo de URL: https://[baseURL]?eid=1&bobj=base64_encoded_booking_object&dname=DentistName
+Resumen
+Estos son los principales endpoints y sus usos en la API de Anita Booking. Con esta información, deberías tener una buena comprensión de cómo interactuar con la API para realizar operaciones comunes como obtener información de la clínica, registrar pacientes y reservar citas.
